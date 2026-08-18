@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "m3u-txt-converter",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-19",
+  "workers_dev": true
+}
