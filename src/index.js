@@ -11,6 +11,7 @@ h1{margin:0 0 8px;font-size:28px}.sub{color:#94a3b8;margin-bottom:20px}.row{disp
 label{display:block;font-weight:700;margin:0 0 8px}textarea{width:100%;height:360px;resize:vertical;background:#020617;color:#dbeafe;border:1px solid #334155;border-radius:12px;padding:14px;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}.btn{border:0;border-radius:10px;padding:11px 16px;cursor:pointer;font-weight:700}.primary{background:#3b82f6;color:#fff}.secondary{background:#334155;color:#fff}.green{background:#10b981;color:#06281f}.danger{background:#7f1d1d;color:#fff}select,input[type=file]{background:#0b1220;color:#e5e7eb;border:1px solid #334155;border-radius:10px;padding:10px}.status{font-size:13px;color:#94a3b8}.meta{display:flex;gap:16px;flex-wrap:wrap;color:#94a3b8;font-size:13px;margin-top:10px}
 small{color:#64748b}.tip{margin-top:18px;padding:14px;background:#0b1220;border:1px solid #233044;border-radius:12px;color:#cbd5e1;font-size:13px;line-height:1.65}code{color:#93c5fd}
+.site-footer{display:flex;justify-content:center;margin-top:18px}.github-link{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid #334155;border-radius:50%;color:#94a3b8;background:#0b1220;transition:.2s;text-decoration:none}.github-link:hover{color:#fff;border-color:#64748b;transform:translateY(-2px)}.github-link svg{width:22px;height:22px}
 </style>
 </head>
 <body>
@@ -34,7 +35,12 @@ small{color:#64748b}.tip{margin-top:18px;padding:14px;background:#0b1220;border:
   TXT 默认格式：<code>频道名,播放地址</code>；也兼容 <code>频道名|播放地址</code>、<code>频道名=播放地址</code>，以及仅一行一个 URL 的 TXT。<br>
   M3U 输出采用扩展 IPTV 格式：保留 <code>x-tvg-url</code>，并输出 <code>tvg-id</code>、<code>tvg-name</code>、<code>tvg-logo</code>、<code>group-title</code> 等字段。
 </div>
-</div></div>
+</div>
+<footer class="site-footer">
+  <a class="github-link" href="https://github.com/koolcy/m3u-txt" target="_blank" rel="noopener noreferrer" aria-label="GitHub 仓库">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .7a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.81 1.3 3.49.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.4 11.4 0 0 1 6 0c2.29-1.55 3.29-1.23 3.29-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.6-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.28c0 .32.22.7.83.58A12 12 0 0 0 12 .7Z"/></svg>
+  </a>
+</footer></div>
 <script>
 const $=id=>document.getElementById(id);
 function setStatus(t){$('status').textContent=t}
