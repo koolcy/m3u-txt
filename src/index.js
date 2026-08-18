@@ -32,7 +32,7 @@ small{color:#64748b}.tip{margin-top:18px;padding:14px;background:#0b1220;border:
 <div class="meta"><span id="count">条目：0</span><span id="status">就绪</span></div>
 <div class="tip">
   TXT 默认格式：<code>频道名,播放地址</code>；也兼容 <code>频道名|播放地址</code>、<code>频道名=播放地址</code>，以及仅一行一个 URL 的 TXT。<br>
-  M3U 会尽量保留 <code>#EXTINF</code> 中的频道名、group-title、tvg-id、tvg-name、tvg-logo、tvg-language 等属性。
+  M3U 输出采用扩展 IPTV 格式：保留 <code>x-tvg-url</code>，并输出 <code>tvg-id</code>、<code>tvg-name</code>、<code>tvg-logo</code>、<code>group-title</code> 等字段。
 </div>
 </div></div>
 <script>
@@ -51,7 +51,7 @@ function esc(value){return String(value ?? '').replace(/\\/g,'\\\\').replace(/"/
 function unquote(v){return v.replace(/^"|"$/g,'').trim()}
 function parseAttrs(s){
   const attrs={};
-  const re=/([\\w-]+)=(?:"([^"]*)"|([^\\s]+))/g; let m;
+  const re=/([\w-]+)=(?:"([^"]*)"|([^\s]+))/g; let m;
   while((m=re.exec(s))) attrs[m[1]]=m[2]??m[3]??'';
   return attrs;
 }
@@ -59,6 +59,9 @@ function parseAttrs(s){
 function parseM3U(text){
   const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/);
   const items=[]; let pending=null;
+  let xTvgUrl='';
+  const header=lines.find(x=>/^#EXTM3U(?:\s|$)/i.test(x.trim()));
+  if(header){ const m=header.match(/x-tvg-url=(?:"([^"]*)"|([^\s]+))/i); xTvgUrl=(m?.[1]??m?.[2]??'').trim(); }
   for(let i=0;i<lines.length;i++){
     const line=lines[i].trim();
     if(!line) continue;
@@ -66,7 +69,7 @@ function parseM3U(text){
       const comma=line.indexOf(',');
       const head=comma>=0?line.slice(0,comma):line;
       const name=comma>=0?line.slice(comma+1).trim():'';
-      const durMatch=head.match(/^#EXTINF:\s*(-?\\d+(?:\\.\\d+)?)/i);
+      const durMatch=head.match(/^#EXTINF:\s*(-?\d+(?:\.\d+)?)/i);
       const attrs=parseAttrs(head);
       pending={duration:durMatch?durMatch[1]:'-1',name:name||attrs['tvg-name']||'',attrs};
       continue;
@@ -76,7 +79,7 @@ function parseM3U(text){
     if(pending){items.push({...pending,url});pending=null}
     else items.push({duration:'-1',name:'',attrs:{},url});
   }
-  return items;
+  return {items,xTvgUrl};
 }
 
 function parseTXT(text){
@@ -98,28 +101,35 @@ function parseTXT(text){
 
 function toTXT(items){
   return items.map(x=>{
-    const name=(x.name||x.attrs?.['tvg-name']||'未命名频道').replace(/[\\r\\n,]/g,' ');
+    const name=(x.name||x.attrs?.['tvg-name']||'未命名频道').replace(/[\r\n,]/g,' ');
     return name+','+x.url;
-  }).join('\\n')+'\\n';
+  }).join('\n')+'\n';
 }
-function toM3U(items){
-  const out=['#EXTM3U'];
+function toM3U(items, xTvgUrl='https://11.112114.xyz/pp.xml'){
+  const out=[xTvgUrl ? `#EXTM3U x-tvg-url="${esc(xTvgUrl)}"` : '#EXTM3U'];
   for(const x of items){
     const attrs=x.attrs||{};
     const keys=['tvg-id','tvg-name','tvg-logo','tvg-language','tvg-country','group-title'];
     const attrText=keys.filter(k=>attrs[k]!==undefined && attrs[k]!==null && attrs[k]!=='').map(k=>`${k}="${esc(attrs[k])}"`).join(' ');
     const dur=x.duration||'-1';
-    const name=(x.name||attrs['tvg-name']||'未命名频道').replace(/[\\r\\n]/g,' ');
+    const name=(x.name||attrs['tvg-name']||'未命名频道').replace(/[\r\n]/g,' ');
     out.push('#EXTINF:'+dur+(attrText?' '+attrText:'')+','+name);
     out.push(x.url);
   }
-  return out.join('\\n')+'\\n';
+  return out.join('\n')+'\n';
 }
 
 async function convert(mode,text){
-  const items=mode==='m3u2txt'?parseM3U(text):parseTXT(text);
+  let items, xTvgUrl='';
+  if(mode==='m3u2txt'){
+    const parsed=parseM3U(text);
+    items=parsed.items;
+    xTvgUrl=parsed.xTvgUrl;
+  }else{
+    items=parseTXT(text);
+  }
   if(!items.length) throw new Error('没有识别到有效频道条目');
-  return {result:mode==='m3u2txt'?toTXT(items):toM3U(items),count:items.length};
+  return {result:mode==='m3u2txt'?toTXT(items):toM3U(items,xTvgUrl||'https://11.112114.xyz/pp.xml'),count:items.length};
 }
 
 export default {
